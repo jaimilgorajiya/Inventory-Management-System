@@ -1,0 +1,77 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Calibri;}}
+\fs24
+\b Inventory Management System — Comparison Report\b0\par
+\par
+\b Executive Summary\b0\par
+This report compares the current project against a reference inventory management feature set, highlights detailed gaps (how each feature is missing), and proposes a simple, implementable roadmap suitable for a solo developer.\par
+\par
+\b Current Project Features\b0\par
+- Stock In with vendor and product details\par
+- Stock Out with party/dispatch details\par
+- Product attributes: category, size, color (from past entries)\par
+- Stock summary for available variants and remaining quantities\par
+- Stock Out validation against available quantity\par
+- PDF receipts for Stock In/Out\par
+- Barcode generation (Code128) on submit\par
+- Authentication with protected routes (JWT)\par
+\par
+\b Reference Software Features\b0\par
+- Inventory valuation: FIFO\par
+- Daily/Monthly sales & stock register & report analysis\par
+- Barcode/Design/Color/Size management\par
+- Multiple rate setting\par
+- Inward Challan, Inward Return\par
+- Stock valuation reports & vendor analysis\par
+- Purchase Order (PO) management\par
+- Stock audit\par
+- Stock damage & loss\par
+- Fresh & defective stock management\par
+- Track inventory at multiple warehouses\par
+- Monthly/Yearly stock comparison\par
+- Stock ageing, moving, non-moving with graph\par
+- Stock level management (min/max)\par
+- Stock ratio\par
+\par
+\b Detailed Gap Analysis (How it is missing)\b0\par
+- Valuation (FIFO): No cost layers are recorded on stock-in, stock-out does not consume specific layers, and there is no inventory ledger or valuation report. Quantities are tracked without unit costs.\par
+- Reports: Only per-transaction PDF receipts exist. There are no date-range APIs or pages for sales/stock registers, no daily/monthly aggregations, and no CSV/PDF export for registers.\par
+- Barcode/Attributes: Barcode generation works, but the "design" attribute is not present in the product variant model or UI; Design/Color/Size coverage is partial.\par
+- Price (Multiple rate setting): No price lists or tiered rates; selling price is not stored per variant with effective dates.\par
+- Returns: No endpoints or UI for Inward Return/Outward Return. No reversal entries linked to original documents, and no return receipt/challan generation.\par
+- Vendor analysis: Vendor information exists within Stock In but there are no summary endpoints or reports (totals by vendor, last purchase date, performance).\par
+- Purchase Orders (PO): Absent PO models, statuses (draft/approved), and receiving linkage to Stock In. No UI to create/approve POs.\par
+- Audits: No audit trail fields (createdBy/updatedBy/timestamps) and no stock audit process (cycle counts, adjustments, approvals).\par
+- Quality states: No fields/flows for fresh vs defective; no damage/loss write-off entries with reasons/approvals.\par
+- Warehouses: No warehouse entity; inventory is global. No per-warehouse on-hand balances or transfer capability.\par
+- Comparisons/Analytics: No monthly/yearly comparison endpoints, no ageing classification, and no moving/non-moving tagging or charts.\par
+- Stock levels: No min/max fields on variants and no low-stock or reorder suggestion queries.\par
+- Ratios: No stock ratio definitions or calculations in data model or reports.\par
+\par
+\b Minimal, Non-Complex Roadmap (Recommended)\b0\par
+- Simple Registers\par
+  - Add date-range APIs for Stock In/Out and basic pages with filters and CSV/PDF export.\par
+- Inward Challan + Simple Returns\par
+  - Add "inwardChallanNo" to Stock In and implement a basic Inward Return that reverses quantities with a reason.\par
+- Product Enhancements\par
+  - Add "design" to product variant; include in forms and filters.\par
+- Vendor Basics\par
+  - Add a minimal vendor master and a simple totals-by-vendor report.\par
+- Stock Levels\par
+  - Add "minLevel" per variant and a low-stock report (no alerts initially).\par
+\par
+\b Deferred (Complex/Enterprise — Future)\b0\par
+- Full FIFO valuation engine and valuation reports\par
+- Purchase Orders with approvals, receiving, and returns\par
+- Multi-warehouse with transfers\par
+- Stock audits with cycle counting\par
+- Damage & loss workflows with approvals\par
+- Fresh/Defective stock segregation\par
+- Ageing and moving/non-moving analytics with charts\par
+- Min/Max auto-replenishment and alerts\par
+- Stock ratios and advanced dashboards\par
+\par
+\b Notes\b0\par
+- Keep DB indexes on frequently filtered fields (date, product, vendor).\par
+- Reuse existing receipt generation where possible to stay simple.\par
+}

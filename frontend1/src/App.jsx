@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, NavLink, Navigate, useLocation, useNaviga
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
 import { Canvas } from '@react-three/fiber'
-import { Stars } from '@react-three/drei'
+import { Stars, OrbitControls, Environment, useGLTF, Bounds, Center } from '@react-three/drei'
 import Shuffle from './Shuffle.js';
 import StockInPage from './pages/StockIn.jsx';
 import StockOutPage from './pages/StockOut.jsx';
@@ -14,6 +14,7 @@ import LoginPage from './pages/Login.jsx';
 import RegisterPage from './pages/Register.jsx';
 import ForgotPasswordPage from './pages/ForgotPassword.jsx';
 import ResetPasswordPage from './pages/ResetPassword.jsx';
+import VoiceAssistant from './components/VoiceAssistant.jsx';
 
 import './App.css'
 
@@ -52,6 +53,7 @@ function Navbar() {
       navigate('/login', { replace: true })
     }
   }
+
   return (
     <header className="nav">
       <div className="nav-inner">
@@ -129,6 +131,52 @@ function BackgroundRipple() {
   )
 }
 
+function Model({ color = '#7aa2ff', ...props }) {
+  const { scene } = useGLTF('/models/a_windy_day.glb')
+  const colored = React.useMemo(() => {
+    const root = scene.clone(true)
+    root.traverse((obj) => {
+      if (obj.isMesh && obj.material) {
+        const mat = obj.material.clone()
+        if (mat.color) mat.color.set(color)
+        if (mat.emissive) {
+          mat.emissive.set(color)
+          if (typeof mat.emissiveIntensity === 'number') mat.emissiveIntensity = Math.max(0.1, mat.emissiveIntensity)
+        }
+        obj.material = mat
+      }
+      if (obj.isPoints && obj.material) {
+        const pm = obj.material.clone()
+        if (pm.color) pm.color.set(color)
+        obj.material = pm
+      }
+    })
+    return root
+  }, [scene, color])
+  return <primitive object={colored} {...props} />
+}
+
+function HeroModelCanvas() {
+  return (
+    <div className="hero-model" aria-label="3D model">
+      <Canvas camera={{ fov: 45 }} dpr={[1, 2]}>
+        <ambientLight intensity={0.8} />
+        <React.Suspense fallback={null}>
+          <Bounds fit clip observe margin={1.1}>
+            <Center>
+              <Model />
+            </Center>
+          </Bounds>
+          <Environment preset="city" />
+        </React.Suspense>
+        <OrbitControls enablePan={false} enableZoom={false} enableDamping dampingFactor={0.08} autoRotate autoRotateSpeed={5} />
+      </Canvas>
+    </div>
+  )
+}
+
+useGLTF.preload('/models/a_windy_day.glb')
+
 function Home() {
   return (
     <section className="hero">
@@ -148,13 +196,13 @@ function Home() {
   respectReducedMotion={true}
 />
         </h1>
-        <p className="hero-sub">
-Real-time control of stock in, stock out, and detailed records in a sleek dashboard.</p>
+        <p className="hero-sub">Real-time control of stock in, stock out, and detailed records in a sleek dashboard.</p>
         <div className="hero-cta">
           <NavLink to="/stock-in" className="btn primary wide">Stock In</NavLink>
           <NavLink to="/stock-out" className="btn wide">Stock Out</NavLink>
         </div>
       </div>
+      <HeroModelCanvas />
     </section>
   )
 }
@@ -219,6 +267,7 @@ function AppContent() {
           <Route path="*" element={<Navigate to={isAuthed() ? "/" : "/login"} replace />} />
         </Routes>
       </main>
+      {!isAuthPage && <VoiceAssistant />}
     </>
   )
 }

@@ -12,12 +12,13 @@ A full‑stack inventory app with authentication, Stock In and Stock Out flows, 
 - PDF receipts generated on server for Stock In/Out
 - Barcode (Code128) generation on submit (encodes product details)
 - Auth (JWT) with protected routes
+- Voice Assistant navigation (hands‑free page switching and help)
 
 ## Tech Stack
 - Frontend: React 19, Vite, React Router
 - Backend: Node.js, Express
 - Database: MongoDB (Mongoose)
-- Extras: jsbarcode, qrcode (legacy), three.js background
+- Extras: jsbarcode, qrcode (legacy), three.js background, Web Speech API (speech recognition + TTS), framer‑motion
 
 ## Monorepo Structure
 - backend/
@@ -79,6 +80,32 @@ Open the printed local URL from the dev server output.
 - Stock In: use the datalist dropdowns for category/size/color or type new values.
 - Stock Out: select a product from the "Select Product (in stock)" dropdown; fields auto‑fill and the available quantity is displayed. Quantity is validated against availability.
 - After submit, a PNG barcode is generated for the product details; receipts can be downloaded from the success message link.
+
+## Voice Assistant (Navigation)
+The app includes a lightweight voice assistant for quick navigation between pages.
+
+### How to use
+- Click the microphone button in the bottom‑right, or press `Ctrl + Shift + V` (Cmd + Shift + V on macOS).
+- Speak a command after the prompt. The assistant will read back status and navigate.
+
+### Supported commands
+- "Dashboard" or "Home"
+- "Stock In"
+- "Stock Out"
+- "Records" or "View Records"
+- "Reports", "Stock In Report", "Stock Out Report"
+- "Logout"
+- "Help" (reads the available commands)
+
+### Permissions and privacy
+- Uses the browser's Web Speech API for on‑device speech recognition and text‑to‑speech.
+- No audio is uploaded by this app. Behavior may vary by browser implementation.
+- You must allow microphone access when prompted.
+
+### Troubleshooting
+- If you see "Voice recognition not supported", try Chrome/Edge on desktop.
+- If nothing happens after clicking the mic, ensure mic permission is granted and no other app is using it.
+- Recognition auto‑stops after ~10 seconds of silence; click the mic again to retry.
 
 ## Environment Notes
 - If you see backend errors about missing env vars, ensure `.env` has `MONGO_URI` and `JWT_SECRET` defined.
