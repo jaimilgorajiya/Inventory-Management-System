@@ -15,10 +15,11 @@ import RegisterPage from './pages/Register.jsx';
 import ForgotPasswordPage from './pages/ForgotPassword.jsx';
 import ResetPasswordPage from './pages/ResetPassword.jsx';
 import VoiceAssistant from './components/VoiceAssistant.jsx';
+import { Sun, Moon } from 'lucide-react';
 
 import './App.css'
 
-function Navbar() {
+function Navbar({ theme, toggleTheme }) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [reportsOpen, setReportsOpen] = useState(false)
@@ -92,6 +93,15 @@ function Navbar() {
               </div>
             )}
           </div>
+          <button
+            type="button"
+            className="nav-link"
+            onClick={(e) => { e.stopPropagation(); toggleTheme(); }}
+            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
           {!token ? (
             <NavLink to="/login" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Login</NavLink>
           ) : (
@@ -103,12 +113,14 @@ function Navbar() {
   )
 }
 
-function Background3D() {
+function Background3D({ theme }) {
   return (
     <div className="three-bg" aria-hidden>
       <Canvas camera={{ position: [0, 0, 1] }} dpr={[1, 2]} gl={{ antialias: true }}>
-        <ambientLight intensity={0.6} />
-        <Stars radius={100} depth={50} count={4000} factor={3} saturation={0} fade speed={0.6} />
+        <ambientLight intensity={theme === 'light' ? 0.9 : 0.6} />
+        {theme !== 'light' && (
+          <Stars radius={100} depth={50} count={4000} factor={3} saturation={0} fade speed={0.6} />
+        )}
       </Canvas>
     </div>
   )
@@ -156,7 +168,7 @@ function Model({ color = '#7aa2ff', ...props }) {
   return <primitive object={colored} {...props} />
 }
 
-function HeroModelCanvas() {
+function HeroModelCanvas({ theme }) {
   return (
     <div className="hero-model" aria-label="3D model">
       <Canvas camera={{ fov: 45 }} dpr={[1, 2]}>
@@ -164,7 +176,7 @@ function HeroModelCanvas() {
         <React.Suspense fallback={null}>
           <Bounds fit clip observe margin={0.95}>
             <Center>
-              <Model />
+              <Model color={theme === 'light' ? '#4f46e5' : '#7aa2ff'} />
             </Center>
           </Bounds>
           <Environment preset="city" />
@@ -177,7 +189,7 @@ function HeroModelCanvas() {
 
 useGLTF.preload('/models/a_windy_day.glb')
 
-function Home() {
+function Home({ theme }) {
   return (
     <section className="hero">
       <div className="hero-content">
@@ -209,7 +221,7 @@ function Home() {
           <NavLink to="/stock-out" className="btn wide">Stock Out</NavLink>
         </div>
       </div>
-      <HeroModelCanvas />
+      <HeroModelCanvas theme={theme} />
     </section>
   )
 }
@@ -254,18 +266,53 @@ function AppContent() {
     }
   }, [])
 
+  const [theme, setTheme] = React.useState(() => {
+    if (typeof window === 'undefined') return 'dark'
+    const saved = localStorage.getItem('theme')
+    if (saved === 'light' || saved === 'dark') return saved
+    const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+    return prefersLight ? 'light' : 'dark'
+  })
+
+  React.useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', theme)
+      localStorage.setItem('theme', theme)
+    }
+  }, [theme])
+
+  const toggleTheme = React.useCallback(() => {
+    setTheme((t) => (t === 'light' ? 'dark' : 'light'))
+  }, [])
+
+  // Sync theme when VoiceAssistant dispatches a theme change event
+  React.useEffect(() => {
+    const onThemeChange = (e) => {
+      const next = e?.detail?.theme
+      if (next === 'light' || next === 'dark') setTheme(next)
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('app-theme-change', onThemeChange)
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('app-theme-change', onThemeChange)
+      }
+    }
+  }, [])
+
   return (
     <>
-      <Background3D />
+      <Background3D theme={theme} />
       {!isAuthPage && <BackgroundRipple />}
-      {!isAuthPage && <Navbar />}
+      {!isAuthPage && <Navbar theme={theme} toggleTheme={toggleTheme} />}
       <main className={isAuthPage ? 'container auth-container' : 'container'}>
         <Routes>
           <Route path="/login" element={isAuthed() ? <Navigate to="/" replace /> : <LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><Home theme={theme} /></ProtectedRoute>} />
           <Route path="/stock-in" element={<ProtectedRoute><StockInPage /></ProtectedRoute>} />
           <Route path="/stock-out" element={<ProtectedRoute><StockOutPage /></ProtectedRoute>} />
           <Route path="/records" element={<ProtectedRoute><RecordsPage /></ProtectedRoute>} />

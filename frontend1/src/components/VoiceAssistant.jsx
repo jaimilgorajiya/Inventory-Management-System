@@ -191,6 +191,30 @@ const VoiceAssistant = () => {
   const handleCommand = useCallback((command) => {
     const normalizedCommand = command.toLowerCase().trim();
     
+    // Theme switching commands (light/dark mode)
+    const wantsLight = /\b(light\s*(mode|theme)|enable\s*light|switch\s*to\s*light|make\s*it\s*light)\b/.test(normalizedCommand);
+    const wantsDark = /\b(dark\s*(mode|theme)|enable\s*dark|switch\s*to\s*dark|make\s*it\s*dark)\b/.test(normalizedCommand);
+
+    if (wantsLight || wantsDark) {
+      const next = wantsLight ? 'light' : 'dark';
+      try {
+        if (typeof document !== 'undefined') {
+          document.documentElement.setAttribute('data-theme', next);
+        }
+        localStorage.setItem('theme', next);
+        // Notify app to sync state
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+          const evt = new CustomEvent('app-theme-change', { detail: { theme: next } });
+          window.dispatchEvent(evt);
+        }
+        speak(`Switching to ${next} mode.`, true);
+        setMessage(`🌓 Theme set to ${next}.`);
+      } catch {
+        // ignore
+      }
+      return;
+    }
+    
     // Find matching command
     // Sort by key length (longest first) to match more specific commands first
     // e.g., "stock out report" should match before "stock out"
