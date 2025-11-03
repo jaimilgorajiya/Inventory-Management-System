@@ -162,7 +162,7 @@ function HeroModelCanvas() {
       <Canvas camera={{ fov: 45 }} dpr={[1, 2]}>
         <ambientLight intensity={0.8} />
         <React.Suspense fallback={null}>
-          <Bounds fit clip observe margin={1.1}>
+          <Bounds fit clip observe margin={0.95}>
             <Center>
               <Model />
             </Center>
@@ -195,8 +195,15 @@ function Home() {
   triggerOnHover={true}
   respectReducedMotion={true}
 />
+          <span className="hero-title-addon">Smart • Fast • Reliable</span>
         </h1>
         <p className="hero-sub">Real-time control of stock in, stock out, and detailed records in a sleek dashboard.</p>
+        <p className="hero-mini">Fast actions, clear insights, and reliable records for your daily operations.</p>
+        <ul className="hero-points">
+          <li>Low-stock alerts</li>
+          <li>PDF Receipts</li>
+          <li>Secure multi-user access</li>
+        </ul>
         <div className="hero-cta">
           <NavLink to="/stock-in" className="btn primary wide">Stock In</NavLink>
           <NavLink to="/stock-out" className="btn wide">Stock Out</NavLink>
